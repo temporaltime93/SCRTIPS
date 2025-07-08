@@ -1,3 +1,4 @@
+local TP = CFrame.new(-428.9302978515625, 28.000032424926758, -49043.328125)
 --!strict
 
 --// Servicios
@@ -186,8 +187,7 @@ local function inicializarSistema()
 
 	sentarseEnMaximGun()
 	task.wait(2)
-
-	moverComoAutoBonos(CFrame.new(-428.9302978515625, 28.000032424926758, -49043.328125))
+	moverComoAutoBonos(TP)
 	task.wait(1)
 
 	restaurarCamara()
