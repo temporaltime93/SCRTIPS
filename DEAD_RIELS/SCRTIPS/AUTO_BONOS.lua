@@ -123,49 +123,61 @@ end
 
 --// Función 5: Sentarse en MaximGun
 local function sentarseEnMaximGun()
-	repeat
-		task.wait()
-		player.Character.HumanoidRootPart.Anchored = true
-		task.wait(0.5)
-		player.Character.HumanoidRootPart.CFrame = CFrame.new(80, 3, -9000)
-	until Workspace.RuntimeItems:FindFirstChild("MaximGun")
+    local intentos = 0
+    repeat
+        task.wait()
+        player.Character.HumanoidRootPart.Anchored = true
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(80, 3, -9000)
+        intentos += 1
+    until Workspace.RuntimeItems:FindFirstChild("MaximGun") or intentos >= 10
 
-	task.wait(0.3)
-	for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
-		if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
-			v.VehicleSeat.Disabled = false
-			v.VehicleSeat:SetAttribute("Disabled", false)
-			v.VehicleSeat:Sit(player.Character.Humanoid)
-		end
-	end
+    task.wait(0.3)
+    for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+        if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+            v.VehicleSeat.Disabled = false
+            v.VehicleSeat:SetAttribute("Disabled", false)
+            v.VehicleSeat:Sit(player.Character.Humanoid)
+        end
+    end
 
-	task.wait(0.5)
-	for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
-		if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
-			if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
-				player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
-			end
-		end
-	end
+    task.wait(0.5)
+    for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+        if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+            if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
+                player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
+            end
+        end
+    end
 
-	task.wait(1)
-	player.Character.HumanoidRootPart.Anchored = false
-	repeat task.wait() until player.Character.Humanoid.Sit == true
-	task.wait(0.5)
-	player.Character.Humanoid.Sit = false
+    task.wait(1)
+    player.Character.HumanoidRootPart.Anchored = false
 
-	repeat
-		task.wait()
-		for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
-			if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
-				if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
-					player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
-				end
-			end
-		end
-	until player.Character.Humanoid.Sit == true
+    -- * Nueva lógica robusta: intentar sentarse múltiples veces si es necesario
+    local reintentos = 0
+    while not player.Character.Humanoid.Sit and reintentos < 10 do
+        for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+            if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+                if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
+                    player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
+                    v.VehicleSeat:Sit(player.Character.Humanoid)
+                end
+            end
+        end
+        reintentos += 1
+        task.wait(0.5)
+    end
+
+    -- * Reintento de "unsit/sit" por seguridad si sigue sin sentarse
+    if not player.Character.Humanoid.Sit then
+        player.Character.Humanoid.Sit = false
+        task.wait(0.2)
+        player.Character.Humanoid.Sit = true
+    end
+
+    -- * Garantía final de asiento
+    repeat task.wait(0.25) until player.Character.Humanoid.Sit == true
 end
-
 --// Función 6: Ir al tren y hacer Tween hasta el asiento
 local function irAlTren()
 	task.wait(0.9)
