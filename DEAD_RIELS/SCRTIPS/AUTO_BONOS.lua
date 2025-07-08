@@ -244,9 +244,10 @@ local function crearGUIBond()
 	joinServer.MouseButton1Click:Connect(function()
         if setclipboard then
             setclipboard(enlace)
-            print("✅ Enlace copiado al portapapeles")
+            
+            _G.mensaje = { M = "success", T = "HAS COPIADO EL LINK CORRECTAMENTE" } -- Opciones: error, log, success, help
         else
-            print("❌ No se pudo copiar. setclipboard no disponible.")
+            _G.mensaje = { M = "error", T = "ERROR AL COPIAR" } -- Opciones: error, log, success, help
         end
     end)
 end
@@ -433,12 +434,9 @@ end
 local function manejarCambiosDeVida(humanoid)
 	humanoid.HealthChanged:Connect(function()
 		local porcentaje = obtenerPorcentajeVida(humanoid)
-		print("❤️ Vida actual: " .. porcentaje .. "%")
 
 		if porcentaje <= 20 and not ejecutado then
 			ejecutado = true
-
-			print("🚨 ¡Vida crítica! Ejecutando acción de emergencia...")
 
 			local bonos = tostring(_G.Bond or "0")
 			_G.enviar = {
