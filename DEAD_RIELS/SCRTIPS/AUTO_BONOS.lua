@@ -1,7 +1,117 @@
 --_G.MARCA_DEL_JUEGO = "DEAD_RIELS"
 --_G.User_ID = "922173773631877150"
 --// Servicios
+--!strict
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+-- * SENTARSE EN MAXIMGUN
+local function sentarseEnMaximGunn()
+	repeat
+		task.wait()
+		hrp.Anchored = true
+		hrp.CFrame = CFrame.new(80, 3, -9000)
+	until Workspace.RuntimeItems:FindFirstChild("MaximGun")
+
+	task.wait(0.3)
+
+	for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+		if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+			local seat = v.VehicleSeat
+			seat.Disabled = false
+			seat:SetAttribute("Disabled", false)
+			seat:Sit(humanoid)
+		end
+	end
+
+	task.wait(0.5)
+
+	for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+		if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+			if (hrp.Position - v.VehicleSeat.Position).Magnitude < 400 then
+				hrp.CFrame = v.VehicleSeat.CFrame
+			end
+		end
+	end
+
+	hrp.Anchored = false
+	repeat task.wait() until humanoid.Sit == true
+	task.wait(0.5)
+end
+
+-- * Buscar el primer enemigo Model_Werewolf válido
+local function encontrarPrimerEnemigo()
+	for _, obj in ipairs(Workspace:GetDescendants()) do
+		if obj:IsA("Model") 
+			and obj.Name == "Model_Werewolf"
+			and obj:FindFirstChild("Humanoid") 
+			and obj:FindFirstChild("HumanoidRootPart") then
+			return obj
+		end
+	end
+	return nil
+end
+
+-- * Mover hacia el enemigo con BodyVelocity real
+local function moverHaciaEnemigo()
+	local enemigo = encontrarPrimerEnemigo()
+	if not enemigo then
+		warn("❌ No se encontró enemigo Model_Werewolf")
+		return
+	end
+
+	local objetivo = enemigo:FindFirstChild("HumanoidRootPart")
+	if not objetivo then return end
+
+	-- * Crear estabilizador físico
+	local bv = hrp:FindFirstChild("VelocityHandler")
+	if not bv then
+		bv = Instance.new("BodyVelocity")
+		bv.Name = "VelocityHandler"
+		bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+		bv.Velocity = Vector3.new(0, 0, 0)
+		bv.Parent = hrp
+	end
+
+	humanoid.Sit = false
+	humanoid.PlatformStand = false
+	hrp.Anchored = false
+
+	-- * Movimiento en tiempo real
+	local conn
+	conn = RunService.Heartbeat:Connect(function()
+		if not objetivo or not objetivo.Parent then
+			conn:Disconnect()
+			warn("☠️ Enemigo eliminado o desaparecido.")
+			return
+		end
+
+		local dir = (objetivo.Position - hrp.Position).Unit * 100
+		bv.Velocity = Vector3.new(dir.X, 0, dir.Z)
+
+		if (hrp.Position - objetivo.Position).Magnitude > 200 then
+			hrp.CFrame = objetivo.CFrame + Vector3.new(0, 3, 0)
+		end
+	end)
+end
+
+-- * FLUJO PRINCIPAL
+local function main__()
+	sentarseEnMaximGunn()
+	task.wait(1)
+	moverHaciaEnemigo()
+end
+
+
 local enlace = "https://discord.gg/2qcRceCmtC" 
+_G.SISTEMA_ACTIVO = true -- * Controla si el auto recolector sigue funcionando
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -22,6 +132,65 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
 
+--// Función 5: Sentarse en MaximGun
+local function sentarseEnMaximGun()
+	repeat
+		task.wait()
+		player.Character.HumanoidRootPart.Anchored = true
+		task.wait(0.5)
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(80, 3, -9000)
+	until Workspace.RuntimeItems:FindFirstChild("MaximGun")
+
+	task.wait(0.3)
+	for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+		if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+			v.VehicleSeat.Disabled = false
+			v.VehicleSeat:SetAttribute("Disabled", false)
+			v.VehicleSeat:Sit(player.Character.Humanoid)
+		end
+	end
+
+	task.wait(0.5)
+	for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+		if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+			if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
+				player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
+			end
+		end
+	end
+
+	task.wait(1)
+	player.Character.HumanoidRootPart.Anchored = false
+	repeat task.wait() until player.Character.Humanoid.Sit == true
+	task.wait(0.5)
+	player.Character.Humanoid.Sit = false
+
+	-- * Reintentar sentarse hasta 5 veces
+	local intentos = 0
+	while player.Character.Humanoid.Sit == false and intentos < 5 do
+		intentos += 1
+		task.wait(0.3)
+		for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+			if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+				if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
+					player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
+					v.VehicleSeat:Sit(player.Character.Humanoid)
+				end
+			end
+		end
+	end
+
+	repeat
+		task.wait()
+		for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+			if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+				if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
+					player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
+				end
+			end
+		end
+	until player.Character.Humanoid.Sit == true
+end
 
 local function crearGUIBond()
 
@@ -193,7 +362,7 @@ end
 
 --// Función 7: Bucle infinito de recolección de bonos
 local function autoRecolectarBonos()
-	while true do
+	while _G.SISTEMA_ACTIVO do
 		if player.Character.Humanoid.Sit then
 			local tpEnd = TweenService:Create(player.Character.HumanoidRootPart, TweenInfo.new(17, Enum.EasingStyle.Quad), {
 				CFrame = CFrame.new(0.5, -78, -49429),
@@ -244,19 +413,8 @@ task.spawn(function()
 			print("⏱️ Sin cambios desde hace:", tiempoSinCambios, "segundos")
 
 			if tiempoSinCambios >= TIEMPO_ESPERA then
-				local Player = game.Players.LocalPlayer
-				local function ResetCharacter()
-					if Player.Character then
-						local humanoid = Player.Character:FindFirstChild("Humanoid")
-						if humanoid then
-							humanoid.Health = 0
-						end
-
-					else
-						warn("El personaje no está disponible.")
-					end
-				end
-				ResetCharacter()
+				_G.SISTEMA_ACTIVO = false
+				main__()
 			end
 		end
 	end
