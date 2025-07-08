@@ -72,7 +72,7 @@ local function crearGUIBond()
 	textBox.Position = UDim2.new(0.5, -57, 0.5, 165)
 	textBox.ZIndex = 12
 	textBox.Parent = frame
-    joinServer.MouseButton1Click:Connect(function()
+	joinServer.MouseButton1Click:Connect(function()
         if setclipboard then
             setclipboard(enlace)
             print("✅ Enlace copiado al portapapeles")
