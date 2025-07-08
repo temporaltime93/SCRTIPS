@@ -42,9 +42,8 @@ local function createUI()
     local _HOME_ = HOME:NewSection("🏠 HOME")
     _HOME_:NewLabel("💖 ACA ESTA LOS SCRIPTS GENERALES 💖")
     _HOME_:NewButton("AUTO BONOS EJECUTADO", "PEGA EL LINK EN GOOGLE", function()
-        
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/temporaltime93/-HUBS-/refs/heads/main/%5BGENERAL%5D/SCRIPTS/PARTES/auto_bonos.lua"))()
         _G.mensaje = { M = "success", T = "AUTO BONOS EJECUTADO" } -- Opciones: error, log, success, help
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/temporaltime93/SCRTIPS/refs/heads/main/DEAD_RIELS/SCRTIPS/AUTO_BONOS.lua"))()
     end)
 end
 
