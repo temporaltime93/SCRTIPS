@@ -3,7 +3,6 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/temporaltime93/-PROTOTYPE-/main/[MODULOS]/NOTI.lua"))()
 
 -- Cargar la librería Kavo
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/temporaltime93/-HUBS-/main/[GENERAL]/HUB.lua"))()
@@ -37,7 +36,7 @@ local function createUI()
     _PRESENTACION_:NewLabel("🎯 TECNOLOGIA PARA TODOS 🎯")
     _PRESENTACION_:NewButton("JOIN SERVER", "PEGA EL LINK EN GOOGLE", function()
         setclipboard("discord.gg/2qcRceCmtC")
-        _G.mensaje = { texto = "SE COPIO EL LINK", modo = "success" }
+        _G.mensaje = {M = "success",  T = "SE COPIO EL LINK"}
     end)
     local HOME = Window:NewTab("🏠 HOME")
     local _HOME_ = HOME:NewSection("🏠 HOME")
@@ -45,7 +44,7 @@ local function createUI()
     _HOME_:NewButton("AUTO BONOS EJECUTADO", "PEGA EL LINK EN GOOGLE", function()
         
         loadstring(game:HttpGet("https://raw.githubusercontent.com/temporaltime93/-HUBS-/refs/heads/main/%5BGENERAL%5D/SCRIPTS/PARTES/auto_bonos.lua"))()
-        _G.mensaje = { texto = "AUTO BONOS EJECUTADO", modo = "success" }
+        _G.mensaje = { M = "success", T = "AUTO BONOS EJECUTADO" } -- Opciones: error, log, success, help
     end)
 end
 
