@@ -37,7 +37,7 @@ local function crearGUIBond()
 
 	local frame = Instance.new("Frame")
 	frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	frame.BackgroundTransparency = 1
+	frame.BackgroundTransparency = 0
 	frame.BorderSizePixel = 0
 	frame.Size = UDim2.new(1, 0, 1, 0)
 	frame.Position = UDim2.new(0, 0, 0, 0)
@@ -122,68 +122,49 @@ local function configurarCamara()
 end
 
 --// Función 5: Sentarse en MaximGun
--- * Mejora completa del sistema de asiento en MaximGun
 local function sentarseEnMaximGun()
-	local char = player.Character or player.CharacterAdded:Wait()
-	local humanoid = char:WaitForChild("Humanoid")
-	local hrp = char:WaitForChild("HumanoidRootPart")
+	repeat
+		task.wait()
+		player.Character.HumanoidRootPart.Anchored = true
+		task.wait(0.5)
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(80, 3, -9000)
+	until Workspace.RuntimeItems:FindFirstChild("MaximGun")
 
-	-- * Teleport inicial a la zona donde aparecerá la MaximGun
-	hrp.Anchored = true
-	hrp.CFrame = CFrame.new(80, 3, -9000)
-
-	-- * Esperar a que aparezca la MaximGun
-	repeat task.wait() until Workspace:FindFirstChild("RuntimeItems") and Workspace.RuntimeItems:FindFirstChild("MaximGun")
 	task.wait(0.3)
-
-	-- * Buscar asiento de la MaximGun
-	local maxim
 	for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
 		if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
-			maxim = v
-			break
+			v.VehicleSeat.Disabled = false
+			v.VehicleSeat:SetAttribute("Disabled", false)
+			v.VehicleSeat:Sit(player.Character.Humanoid)
 		end
 	end
 
-	if not maxim then
-		warn("❌ No se encontró MaximGun con VehicleSeat")
-		hrp.Anchored = false
-		return
+	task.wait(0.5)
+	for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+		if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+			if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
+				player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
+			end
+		end
 	end
 
-	local seat = maxim.VehicleSeat
-	seat.Disabled = false
-	seat:SetAttribute("Disabled", false)
+	task.wait(1)
+	player.Character.HumanoidRootPart.Anchored = false
+	repeat task.wait() until player.Character.Humanoid.Sit == true
+	task.wait(0.5)
+	player.Character.Humanoid.Sit = false
 
-	-- * Intentar sentarse
-	seat:Sit(humanoid)
-	task.wait(0.4)
-
-	-- * Reubicar si no se sienta a la primera
-	if (hrp.Position - seat.Position).Magnitude > 10 then
-		hrp.CFrame = seat.CFrame + Vector3.new(0, 1.5, 0)
-	end
-
-	-- * Liberar el personaje y esperar confirmación
-	hrp.Anchored = false
-
-	-- ? Reintentar sentarse si el estado no cambia
-	local intentos = 0
-	while humanoid.Sit == false and intentos < 8 do
-		seat:Sit(humanoid)
-		hrp.CFrame = seat.CFrame + Vector3.new(0, 1.5, 0)
-		task.wait(0.4)
-		intentos += 1
-	end
-
-	-- * Confirmar que quedó sentado
-	if humanoid.Sit then
-		print("✅ Sentado exitosamente en MaximGun")
-	else
-		warn("⚠️ No se pudo sentar después de varios intentos")
-	end
+	repeat
+		task.wait()
+		for _, v in ipairs(Workspace.RuntimeItems:GetChildren()) do
+			if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+				if (player.Character.HumanoidRootPart.Position - v.VehicleSeat.Position).Magnitude < 400 then
+					player.Character.HumanoidRootPart.CFrame = v.VehicleSeat.CFrame
+				end
+			end
+		end
+	until player.Character.Humanoid.Sit == true
 end
-
 
 --// Función 6: Ir al tren y hacer Tween hasta el asiento
 local function irAlTren()
